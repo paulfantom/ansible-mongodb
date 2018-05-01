@@ -1,21 +1,23 @@
----
 sudo: required
 language: python
 cache: pip
 services:
   - docker
 env:
-  - ANSIBLE=2.2.3
-  - ANSIBLE=2.3.2
-  - ANSIBLE=2.4.2
+  - ANSIBLE='ansible>=2.4.0,<2.5.0'
+  - ANSIBLE='ansible>=2.5.0,<2.6.0'
+matrix:
+  fast_finish: true
 install:
-  - pip install ansible==${ANSIBLE} ansible-lint>=3.4.15 molecule==1.25.0 docker git-semver testinfra>=1.7.0
+  - pip install ${ANSIBLE} 'ansible-lint>=3.4.15' 'molecule==1.25.0' docker git-semver 'testinfra>=1.7.0,<=1.10.1' jmespath
+before_script:
+  - ansible-lint tests/playbook.yml
 script:
   - molecule test
 deploy:
   provider: script
   skip_cleanup: true
-  script: ./.travis/generatetag.sh
+  script: .travis/releaser.sh
   on:
     branch: master
 branches:
@@ -23,5 +25,3 @@ branches:
     - master
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
-after_script:
-  - .travis/notification.sh
